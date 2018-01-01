@@ -11,9 +11,10 @@
 #import "CollectionViewHolderTableViewCell.h"
 #import "BoxCollectionViewCell.h"
 
-#define max_cells 4
-#define YES_Value @"YES"
-#define NO_Value @"NO"
+#define max_cells 4 //Size of tic tac toe game board 4*4
+#define x_filled [NSNumber numberWithInt:1] //To set if block is filled by X
+#define o_filled [NSNumber numberWithInt:0]  //To set if block is filled by O
+#define nothing_filled [NSNumber numberWithInt:-1]  //To set if block is not filled
 
 @interface ViewController ()
 
@@ -36,9 +37,8 @@
     UIImage *oImage;
     UIImage *xImageResized;
     UIImage *oImageResized;
-    NSInteger numberOfRounds;
-    NSMutableArray *arrayUserX;
-    NSMutableArray *arrayUserO;
+    NSInteger numberOfRounds;   //To keep record of number of rounds played
+    NSMutableArray *arrayUser;     //Array to store the box filled for players
 }
 
 - (void)viewDidLoad {
@@ -52,7 +52,7 @@
     oImage = [UIImage imageNamed:@"O"];
     xImageResized = [[GlobalFunctions shared] imageWithImage:xImage scaledToSize: CGSizeMake(60, 60)];
     oImageResized = [[GlobalFunctions shared] imageWithImage:oImage scaledToSize: CGSizeMake(60, 60)];
-
+    
     [self hideAlert];
     
     [self setupArray];
@@ -60,26 +60,21 @@
 }
 
 -(void)setupArray{
-    arrayUserX = nil;
-    arrayUserO = nil;
-    arrayUserX = [[NSMutableArray alloc] initWithCapacity:max_cells];
-    arrayUserO = [[NSMutableArray alloc] initWithCapacity:max_cells];
+    arrayUser = nil;
+    arrayUser = [[NSMutableArray alloc] initWithCapacity:max_cells];
     for(int i = 0; i< max_cells; i++){
         NSMutableArray *arr = [[NSMutableArray alloc] initWithCapacity:max_cells];
-        NSMutableArray *arr2 = [[NSMutableArray alloc] initWithCapacity:max_cells];
         for (int j = 0; j < max_cells; j++) {
-            [arr addObject:NO_Value];
-            [arr2 addObject:NO_Value];
+            [arr addObject:nothing_filled];
         }
-        [arrayUserX addObject:arr];
-        [arrayUserO addObject:arr2];
+        [arrayUser addObject:arr];
     }
 }
 
 -(void)viewWillAppear:(BOOL)animated{
     
     [super viewWillAppear:animated];
-
+    
 }
 
 -(void)viewDidAppear:(BOOL)animated{
@@ -105,7 +100,7 @@
     //SET INITIAL IMAGE AT CURRENT PLAYER
     switchUser = false;
     _imageViewCurrentPlayer.image = xImageResized;
-
+    
 }
 
 
@@ -168,37 +163,37 @@
 }
 
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
-//    NSLog(@"collection view cell receieved the tap at ==== %ld and row = %ld", (long)indexPath.row, [(BoxCollectionView *)collectionView index].row);
+    //    NSLog(@"collection view cell receieved the tap at ==== %ld and row = %ld", (long)indexPath.row, [(BoxCollectionView *)collectionView index].row);
     BoxCollectionViewCell *cell = (BoxCollectionViewCell *)[collectionView cellForItemAtIndexPath:indexPath];
     if (cell.imageView.image == nil){
         if(!switchUser){
             cell.imageView.image = xImage;
             switchUser = true;
-            arrayUserX[[(BoxCollectionView *)collectionView index].row][indexPath.row] = YES_Value;
+            arrayUser[[(BoxCollectionView *)collectionView index].row][indexPath.row] = x_filled;
             _imageViewCurrentPlayer.image = oImageResized;
         }else{
             cell.imageView.image = oImage;
             switchUser = false;
-            arrayUserO[[(BoxCollectionView *)collectionView index].row][indexPath.row] = YES_Value;
+            arrayUser[[(BoxCollectionView *)collectionView index].row][indexPath.row] = o_filled;
             _imageViewCurrentPlayer.image = xImageResized;
         }
         numberOfRounds = numberOfRounds + 1;
         if (numberOfRounds >= ((max_cells*2)-1) && numberOfRounds <= (max_cells*max_cells)){
+            int x = -1;
             if (switchUser) {
-                if ([self checkWiningCombinations:arrayUserX]) {
+                x = 1;
+            }else{
+                x = 0;
+            }
+            if ([self checkWiningCombinations:arrayUser forPlayer:x]) {
+                if (switchUser){
                     [self showAlert:@"Player X Won!!"];
                 }else{
-                    if (numberOfRounds == (max_cells * max_cells)) {
-                        [self showAlert:@"DRAW!!"];
-                    }
+                    [self showAlert:@"Player O Won!!"];
                 }
             }else{
-                if ([self checkWiningCombinations:arrayUserO]) {
-                    [self showAlert:@"Player O Won!!"];
-                }else{
-                    if (numberOfRounds == (max_cells * max_cells)) {
-                        [self showAlert:@"DRAW!!"];
-                    }
+                if (numberOfRounds == (max_cells * max_cells)) {
+                    [self showAlert:@"DRAW!!"];
                 }
             }
         }
@@ -232,26 +227,30 @@
 }
 
 #pragma mark - GAME WIN CHECK
--(BOOL)checkWiningCombinations:(NSMutableArray *)checkArray{
-
+-(BOOL)checkWiningCombinations:(NSMutableArray *)checkArray forPlayer:(int)player{
+    
     //FLAGS TO KEEP TRACK OF PREVIOUS POSITION
     bool isHorizontalWin = false;
     bool isDiagonal1Win = false;
     bool isDiagonal2Win = false;
     bool is2x2BoxWin = false;
-
+    
     //ARRAY TO CHECK FOR VERTICAL WIN
     NSMutableArray *tempArrIndex = [[NSMutableArray alloc] init];
     
+    NSNumber *number = [NSNumber numberWithInt:player];
+    
     //CHECK FOR CORNER WIN
-    if ([checkArray[0][0] isEqualToString:YES_Value] && [checkArray[0][max_cells-1] isEqualToString:YES_Value] && [checkArray[max_cells-1][0] isEqualToString:YES_Value] && [checkArray[max_cells-1][max_cells-1] isEqualToString:YES_Value]) {
+    if ([checkArray[0][0] isEqual:number] && [checkArray[0][max_cells-1] isEqual:number] && [checkArray[max_cells-1][0] isEqual:number] && [checkArray[max_cells-1][max_cells-1] isEqual:number]) {
         return true;
     }
     
     for (int i = 0; i < max_cells; i++) {
+        //Return early if user is already won by horizontal
         if (isHorizontalWin) {
             break;
         }
+        //Return early if user is already won by 2*2 box
         if (is2x2BoxWin) {
             break;
         }
@@ -259,12 +258,12 @@
         for (int j = 0; j < max_cells; j++) {
             //CHECK FOR VERTICAL WIN
             if (i == 0) {
-                if ([checkArray[i][j] isEqualToString:YES_Value]) {
+                if ([checkArray[i][j] isEqual:number]) {
                     [tempArrIndex addObject:[NSNumber numberWithInt:j]];
                 }
             }else{
                 if([tempArrIndex containsObject:[NSNumber numberWithInt:j]]){
-                    if (!([checkArray[i][j] isEqualToString:YES_Value])) {
+                    if (!([checkArray[i][j] isEqual:number])) {
                         [tempArrIndex removeObject:[NSNumber numberWithInt:j]];
                     }
                 }
@@ -272,13 +271,13 @@
             
             //CHECK FOR HORIZONTAL WIN
             if (j == 0) {
-                if ([checkArray[i][j] isEqualToString:YES_Value]) {
+                if ([checkArray[i][j] isEqual:number]) {
                     isHorizontalWin = true;
                 }else{
                     isHorizontalWin = false;
                 }
             }else{
-                if ([checkArray[i][j] isEqualToString:YES_Value] && isHorizontalWin) {
+                if ([checkArray[i][j] isEqual:number] && isHorizontalWin) {
                     isHorizontalWin = true;
                 }else{
                     isHorizontalWin = false;
@@ -292,11 +291,11 @@
             //CHECK FOR DIAGONAL WIN
             if(i == j){
                 if (i == 0 && j == 0) {
-                    if ([checkArray[i][j] isEqualToString:YES_Value]) {
+                    if ([checkArray[i][j] isEqual:number]) {
                         isDiagonal1Win = true;
                     }
                 }else{
-                    if ([checkArray[i][j] isEqualToString:YES_Value] && isDiagonal1Win) {
+                    if ([checkArray[i][j] isEqual:number] && isDiagonal1Win) {
                         isDiagonal1Win = true;
                     }else{
                         isDiagonal1Win = false;
@@ -305,11 +304,11 @@
             }else{
                 if (j == (max_cells-1)-i){
                     if (i == 0) {
-                        if ([checkArray[i][j] isEqualToString:YES_Value]) {
+                        if ([checkArray[i][j] isEqual:number]) {
                             isDiagonal2Win = true;
                         }
                     }else{
-                        if ([checkArray[i][j] isEqualToString:YES_Value] && isDiagonal2Win) {
+                        if ([checkArray[i][j] isEqual:number] && isDiagonal2Win) {
                             isDiagonal2Win = true;
                         }else{
                             isDiagonal2Win = false;
@@ -320,7 +319,7 @@
             
             //CHECK FOR BOX CONDITON
             if (i < max_cells - 1 && j < max_cells - 1) {
-                if ([checkArray[i][j] isEqualToString:YES_Value] && [checkArray[i][j+1] isEqualToString:YES_Value] && [checkArray[i+1][j] isEqualToString:YES_Value] && [checkArray[i+1][j+1] isEqualToString:YES_Value]) {
+                if ([checkArray[i][j] isEqual:number] && [checkArray[i][j+1] isEqual:number] && [checkArray[i+1][j] isEqual:number] && [checkArray[i+1][j+1] isEqual:number]) {
                     is2x2BoxWin = true;
                     break;
                 }

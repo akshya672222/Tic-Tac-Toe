@@ -10,7 +10,7 @@
 
 @interface ViewController : UIViewController<UITableViewDelegate, UITableViewDataSource, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout>
 
--(BOOL)checkWiningCombinations:(NSMutableArray *)checkArray;
+-(BOOL)checkWiningCombinations:(NSMutableArray *)checkArray forPlayer:(int)player;
 
 @end
 

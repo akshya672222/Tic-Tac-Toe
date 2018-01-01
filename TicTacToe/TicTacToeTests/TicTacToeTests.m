@@ -9,9 +9,10 @@
 #import <XCTest/XCTest.h>
 #import "ViewController.h"
 
-#define max_cells 4
-#define YES_Value @"YES"
-#define NO_Value @"NO"
+#define max_cells 4 //Size of tic tac toe game board 4*4
+#define x_filled [NSNumber numberWithInt:1] //To set if block is filled by X
+#define o_filled [NSNumber numberWithInt:0]  //To set if block is filled by O
+#define nothing_filled [NSNumber numberWithInt:-1]  //To set if block is not filled
 
 @interface TicTacToeTests : XCTestCase
 
@@ -35,7 +36,7 @@
     for (int i = 0; i< max_cells; i++) {
         NSMutableArray *arr = [[NSMutableArray alloc] initWithCapacity:max_cells];
         for (int j = 0; j < max_cells; j++) {
-            [arr addObject:NO_Value];
+            [arr addObject:nothing_filled];
         }
         [arrayToTest addObject:arr];
     }
@@ -52,55 +53,55 @@
     [self resetArray];
     
     //TEST CASE FOR CORNER WIN CONDITION
-    arrayToTest[0][max_cells-1] = YES_Value;
-    arrayToTest[0][0] = YES_Value;
-    arrayToTest[max_cells-1][0] = YES_Value;
-    arrayToTest[max_cells-1][max_cells-1] = YES_Value;
-    XCTAssertTrue([vcObj checkWiningCombinations:arrayToTest]);
+    arrayToTest[0][max_cells-1] = x_filled;
+    arrayToTest[0][0] = x_filled;
+    arrayToTest[max_cells-1][0] = x_filled;
+    arrayToTest[max_cells-1][max_cells-1] = x_filled;
+    XCTAssertTrue([vcObj checkWiningCombinations:arrayToTest forPlayer:1]);
 }
 
 -(void)testTopHorizontal{
     [self resetArray];
     
     //TEST CASE FOR TOP HORIZONTAL
-    arrayToTest[0][0] = YES_Value;
-    arrayToTest[0][1] = YES_Value;
-    arrayToTest[0][2] = YES_Value;
-    arrayToTest[0][3] = YES_Value;
-    XCTAssertTrue([vcObj checkWiningCombinations:arrayToTest]);
+    arrayToTest[0][0] = x_filled;
+    arrayToTest[0][1] = x_filled;
+    arrayToTest[0][2] = x_filled;
+    arrayToTest[0][3] = x_filled;
+    XCTAssertTrue([vcObj checkWiningCombinations:arrayToTest forPlayer:1]);
 }
 
 -(void)testFirstVertical{
     [self resetArray];
     
     //TEST CASE FOR TOP VERTICAL
-    arrayToTest[0][0] = YES_Value;
-    arrayToTest[1][0] = YES_Value;
-    arrayToTest[2][0] = YES_Value;
-    arrayToTest[3][0] = YES_Value;
-    XCTAssertTrue([vcObj checkWiningCombinations:arrayToTest]);
+    arrayToTest[0][0] = x_filled;
+    arrayToTest[1][0] = x_filled;
+    arrayToTest[2][0] = x_filled;
+    arrayToTest[3][0] = x_filled;
+    XCTAssertTrue([vcObj checkWiningCombinations:arrayToTest forPlayer:1]);
 }
 
 -(void)testDiagonal{
     [self resetArray];
     
     //TEST CASE FOR TOP DIAGONAL
-    arrayToTest[0][0] = YES_Value;
-    arrayToTest[1][1] = YES_Value;
-    arrayToTest[2][2] = YES_Value;
-    arrayToTest[3][3] = YES_Value;
-    XCTAssertTrue([vcObj checkWiningCombinations:arrayToTest]);
+    arrayToTest[0][0] = x_filled;
+    arrayToTest[1][1] = x_filled;
+    arrayToTest[2][2] = x_filled;
+    arrayToTest[3][3] = x_filled;
+    XCTAssertTrue([vcObj checkWiningCombinations:arrayToTest forPlayer:1]);
 }
 
 -(void)testBox{
     [self resetArray];
     
     //TEST CASE FOR TOP BOX
-    arrayToTest[0][0] = YES_Value;
-    arrayToTest[0][1] = YES_Value;
-    arrayToTest[1][0] = YES_Value;
-    arrayToTest[1][1] = YES_Value;
-    XCTAssertTrue([vcObj checkWiningCombinations:arrayToTest]);
+    arrayToTest[0][0] = x_filled;
+    arrayToTest[0][1] = x_filled;
+    arrayToTest[1][0] = x_filled;
+    arrayToTest[1][1] = x_filled;
+    XCTAssertTrue([vcObj checkWiningCombinations:arrayToTest forPlayer:1]);
 }
 
 - (void)testPerformanceExample {
@@ -110,11 +111,11 @@
         [self resetArray];
         
         //TEST CASE FOR TOP DIAGONAL
-        arrayToTest[0][0] = YES_Value;
-        arrayToTest[1][1] = YES_Value;
-        arrayToTest[2][2] = YES_Value;
-        arrayToTest[3][3] = YES_Value;
-        XCTAssertTrue([vcObj checkWiningCombinations:arrayToTest]);
+        arrayToTest[0][0] = x_filled;
+        arrayToTest[1][1] = x_filled;
+        arrayToTest[2][2] = x_filled;
+        arrayToTest[3][3] = x_filled;
+        XCTAssertTrue([vcObj checkWiningCombinations:arrayToTest forPlayer:1]);
     }];
 }
 
